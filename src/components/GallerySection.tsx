@@ -1,189 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Image as ImageIcon, X, ChevronLeft, ChevronRight, User, Calendar, Download, RefreshCw } from 'lucide-react';
-import { fetchPhotos } from '../lib/supabase';
-import { PhotoItem } from '../types';
+import React, { useRef } from 'react';
+import { motion } from 'motion/react';
+import { Camera, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 
-interface GallerySectionProps {
-  newPhotoTrigger?: PhotoItem | null;
-}
+export const GallerySection: React.FC = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-export const GallerySection: React.FC<GallerySectionProps> = ({ newPhotoTrigger }) => {
-  const [photos, setPhotos] = useState<PhotoItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null);
-
-  const loadGallery = async () => {
-    setLoading(true);
-    // Pass 'greek-wedding' to strictly scope photos to this event
-    const data = await fetchPhotos('greek-wedding');
-    setPhotos(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadGallery();
-  }, []);
-
-  useEffect(() => {
-    if (newPhotoTrigger) {
-      setPhotos((prev) => [newPhotoTrigger, ...prev.filter((p) => p.id !== newPhotoTrigger.id)]);
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const offset = direction === 'left' ? -clientWidth / 2 : clientWidth / 2;
+      scrollRef.current.scrollTo({ left: scrollLeft + offset, behavior: 'smooth' });
     }
-  }, [newPhotoTrigger]);
-
-  // Keyboard navigation for lightbox
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (activePhotoIndex === null) return;
-      if (e.key === 'Escape') setActivePhotoIndex(null);
-      if (e.key === 'ArrowLeft') handlePrev();
-      if (e.key === 'ArrowRight') handleNext();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activePhotoIndex, photos]);
-
-  const handlePrev = () => {
-    if (activePhotoIndex === null) return;
-    setActivePhotoIndex((prev) => (prev === 0 ? photos.length - 1 : (prev as number) - 1));
   };
 
-  const handleNext = () => {
-    if (activePhotoIndex === null) return;
-    setActivePhotoIndex((prev) => (prev === photos.length - 1 ? 0 : (prev as number) + 1));
-  };
-
-  const activePhoto = activePhotoIndex !== null ? photos[activePhotoIndex] : null;
+  const photos = [
+    {
+      url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Santorini Sunset Engagement',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Aegean Blue Moments',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
+      caption: 'The Cliffs of Oia',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Golden Hour Vows',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Forever Together',
+    },
+  ];
 
   return (
     <section id="gallery" className="py-28 bg-[#050B18] relative overflow-hidden">
+      {/* Background Accent */}
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Title & Refresh Button */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-16 text-center sm:text-left gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0B152C] border border-[#D4AF37]/30 text-[#E5C158] text-xs font-cinzel tracking-[0.25em] uppercase mb-2">
-              <ImageIcon className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span>Memories In Greece</span>
-            </div>
-            <h2 className="font-cormorant text-4xl sm:text-6xl text-white font-light">
-              Wedding <span className="font-cinzel text-[#D4AF37] italic">Gallery</span>
-            </h2>
+        {/* Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0B152C] border border-[#D4AF37]/30 text-[#E5C158] text-xs font-cinzel tracking-[0.25em] uppercase mb-4">
+            <Camera className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Captured Moments</span>
           </div>
+          <h2 className="font-cormorant text-4xl sm:text-6xl text-white font-light">
+            Our <span className="font-cinzel text-[#D4AF37] italic">Gallery</span>
+          </h2>
+          <p className="mt-3 text-sm sm:text-base font-cinzel text-gray-400 tracking-widest uppercase">
+            A glimpse into our journey & love story
+          </p>
+        </motion.div>
 
+        {/* Sliding Gallery Container */}
+        <div className="relative group">
+          {/* Desktop Navigation Buttons */}
           <button
-            onClick={loadGallery}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0B152C] border border-[#D4AF37]/30 text-[#E5C158] text-xs font-cinzel tracking-wider uppercase hover:border-[#D4AF37] transition-all cursor-pointer"
+            onClick={() => scroll('left')}
+            className="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-[#0B152C]/90 border border-[#D4AF37]/40 text-[#D4AF37] items-center justify-center hover:bg-[#D4AF37] hover:text-[#050B18] transition-all shadow-xl"
+            aria-label="Scroll left"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            Refresh Gallery
+            <ChevronLeft className="w-6 h-6" />
           </button>
-        </div>
+          <button
+            onClick={() => scroll('right')}
+            className="hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-[#0B152C]/90 border border-[#D4AF37]/40 text-[#D4AF37] items-center justify-center hover:bg-[#D4AF37] hover:text-[#050B18] transition-all shadow-xl"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
 
-        {/* Masonry Photo Grid */}
-        {loading && photos.length === 0 ? (
-          <div className="py-20 text-center font-cinzel text-xs text-[#E5C158] uppercase tracking-widest animate-pulse">
-            Loading Wedding Album...
-          </div>
-        ) : (
-          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-            {photos.map((photo, idx) => (
+          {/* Horizontal Scroll Track */}
+          <div
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 sm:px-4"
+          >
+            {photos.map((photo, index) => (
               <motion.div
-                key={photo.id || idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                key={index}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: (idx % 6) * 0.05 }}
-                onClick={() => setActivePhotoIndex(idx)}
-                className="break-inside-avoid relative rounded-2xl overflow-hidden border border-[#D4AF37]/20 bg-[#0B152C] group cursor-pointer shadow-lg hover:border-[#D4AF37]/60 transition-all duration-300"
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="min-w-[280px] sm:min-w-[380px] lg:min-w-[420px] h-[400px] sm:h-[480px] snap-center rounded-3xl overflow-hidden glass-panel border border-[#D4AF37]/30 relative group/card flex-shrink-0 shadow-2xl"
               >
                 <img
                   src={photo.url}
-                  alt={photo.caption || 'Wedding Photo'}
-                  className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  loading="lazy"
+                  alt={photo.caption}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 filter brightness-90 group-hover/card:brightness-100"
                 />
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050B18] via-transparent to-transparent opacity-80 group-hover/card:opacity-60 transition-opacity" />
 
-                {/* Hover Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050B18]/90 via-[#050B18]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-                  <span className="font-cormorant text-lg text-white font-medium line-clamp-1">
-                    {photo.caption || 'Greek Wedding Memories'}
-                  </span>
-                  <span className="font-cinzel text-[10px] text-[#E5C158] tracking-widest uppercase flex items-center gap-1">
-                    <User className="w-3 h-3" /> {photo.uploader_name || 'Guest'}
-                  </span>
+                {/* Caption Content */}
+                <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 flex items-center justify-between transform transition-transform duration-500">
+                  <div>
+                    <span className="text-[10px] sm:text-xs font-cinzel text-[#E5C158] tracking-[0.2em] uppercase block mb-1">
+                      Santorini 2027
+                    </span>
+                    <h4 className="font-cormorant text-xl sm:text-2xl text-white font-medium">
+                      {photo.caption}
+                    </h4>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-[#0B152C]/80 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] backdrop-blur-md">
+                    <Heart className="w-4 h-4 fill-[#D4AF37]/30" />
+                  </div>
                 </div>
               </motion.div>
             ))}
           </div>
-        )}
+        </div>
 
-        {/* Fullscreen Lightbox Modal */}
-        <AnimatePresence>
-          {activePhoto && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-[#050B18]/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-8 select-none"
-            >
-              {/* Close Button */}
-              <button
-                onClick={() => setActivePhotoIndex(null)}
-                className="absolute top-6 right-6 p-3 rounded-full bg-[#0B152C] border border-[#D4AF37]/40 text-[#E5C158] hover:bg-[#D4AF37] hover:text-[#050B18] transition-colors z-50 cursor-pointer"
-              >
-                <X className="w-6 h-6" />
-              </button>
-
-              {/* Prev Button */}
-              <button
-                onClick={handlePrev}
-                className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 p-3 rounded-full bg-[#0B152C]/80 border border-[#D4AF37]/40 text-[#E5C158] hover:bg-[#D4AF37] hover:text-[#050B18] transition-colors z-50 cursor-pointer"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-
-              {/* Next Button */}
-              <button
-                onClick={handleNext}
-                className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 p-3 rounded-full bg-[#0B152C]/80 border border-[#D4AF37]/40 text-[#E5C158] hover:bg-[#D4AF37] hover:text-[#050B18] transition-colors z-50 cursor-pointer"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-
-              {/* Central Lightbox Image Box */}
-              <div className="max-w-5xl max-h-[85vh] flex flex-col items-center justify-center relative">
-                <motion.img
-                  key={activePhoto.id}
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  src={activePhoto.url}
-                  alt={activePhoto.caption || 'Wedding Photo'}
-                  className="max-h-[70vh] w-auto max-w-full rounded-2xl border border-[#D4AF37]/40 shadow-2xl object-contain"
-                />
-
-                {/* Photo Info Bar */}
-                <div className="mt-4 text-center space-y-1">
-                  <h4 className="font-cormorant text-2xl text-white font-medium">
-                    {activePhoto.caption || 'Santorini Wedding Moment'}
-                  </h4>
-                  <div className="flex items-center justify-center gap-4 text-xs font-cinzel text-[#E5C158] tracking-widest uppercase">
-                    <span>Uploaded by: {activePhoto.uploader_name || 'Guest'}</span>
-                    <span>•</span>
-                    <a
-                      href={activePhoto.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-gray-300 hover:text-[#E5C158] underline"
-                    >
-                      <Download className="w-3.5 h-3.5" /> High Res
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Swipe instruction hint for mobile users */}
+        <div className="text-center mt-6 md:hidden">
+          <span className="font-cinzel text-[10px] tracking-widest text-gray-500 uppercase">
+            ← Swipe horizontally to explore photos →
+          </span>
+        </div>
       </div>
     </section>
   );

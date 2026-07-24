@@ -14,16 +14,17 @@ export const GallerySection: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [photos, setPhotos] = useState<any[]>([]);
 
-  // Fetch photos from Supabase database on mount
+  // Fetch photos filtered specifically for 'greek-wedding' from 'guest_photos' table on mount
   useEffect(() => {
     const fetchGalleryPhotos = async () => {
       const { data, error } = await supabase
-        .from('gallery_photos')
+        .from('guest_photos')
         .select('*')
+        .eq('wedding_slug', 'greek-wedding')
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching gallery photos:', error.message);
+        console.error('Error fetching guest photos:', error.message);
       } else if (data) {
         setPhotos(data);
       }
@@ -60,7 +61,7 @@ export const GallerySection: React.FC = () => {
     return () => clearInterval(scrollInterval);
   }, [isHovered, photos.length]);
 
-  // Handle Supabase file upload & database insertion
+  // Handle file upload to 'photos' bucket and insert into 'guest_photos' with wedding_slug = 'greek-wedding'
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -73,9 +74,9 @@ export const GallerySection: React.FC = () => {
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `${fileName}`;
 
-        // 1. Upload file to Supabase Storage Bucket
+        // 1. Upload file to Supabase Storage Bucket ('photos')
         const { error: uploadError } = await supabase.storage
-          .from('wedding-gallery')
+          .from('photos')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -85,18 +86,22 @@ export const GallerySection: React.FC = () => {
 
         // 2. Get Public URL
         const { data: publicURLData } = supabase.storage
-          .from('wedding-gallery')
+          .from('photos')
           .getPublicUrl(filePath);
 
         const publicUrl = publicURLData.publicUrl;
+        
+        // 3. Match table schema with exact wedding_slug 'greek-wedding'
         const newPhotoPayload = {
           url: publicUrl,
           caption: `Memory ${photos.length + 1}`,
+          uploader_name: 'Guest',
+          wedding_slug: 'greek-wedding',
         };
 
-        // 3. Save to Supabase Table
+        // 4. Save to 'guest_photos' Table
         const { data: insertedData, error: insertError } = await supabase
-          .from('gallery_photos')
+          .from('guest_photos')
           .insert([newPhotoPayload])
           .select();
 
@@ -217,11 +222,11 @@ export const GallerySection: React.FC = () => {
                         ✨
                       </div>
                       <span className="text-xs font-cinzel text-[#E5C158] tracking-widest uppercase">
-                        Wedding Gallery
+                        {photo.uploader_name ? `By ${photo.uploader_name}` : 'Wedding Gallery'}
                       </span>
                     </div>
                     <h4 className="font-cormorant text-2xl sm:text-3xl text-white font-medium mb-1">
-                      {photo.caption}
+                      {photo.caption || 'Our Memory'}
                     </h4>
                     <p className="font-sans text-xs text-gray-300 font-light line-clamp-1">
                       Celebrating love under the Greek sky ✨

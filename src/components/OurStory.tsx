@@ -11,7 +11,7 @@ export const OurStory: React.FC = () => {
       location: 'Cairo, Egypt',
       description:
         'What began as a chance meeting among mutual friends quickly blossomed into hours of effortless laughter and shared dreams. From the very first conversation, Farah and Seif knew their paths were bound together.',
-      imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+      imageUrl: `${import.meta.env.BASE_URL}hands.jpg`,
     },
     {
       year: 'CHAPTER II',

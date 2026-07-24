@@ -54,7 +54,7 @@ const BackgroundAudio: React.FC = () => {
       ref={audioRef}
       loop
       preload="auto"
-      src={`${import.meta.env.BASE_URL}sounds.mp3`}
+      src={`${import.meta.env.BASE_URL}Sounds.mp3`}
     />
   );
 };

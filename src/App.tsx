@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IntroVideo } from './components/IntroVideo';
 import { Navigation } from './components/Navigation';
 import { HeroSection } from './components/HeroSection';
@@ -12,6 +12,54 @@ import { GallerySection } from './components/GallerySection';
 import { OrganizerPortal } from './components/OrganizerPortal';
 import { Footer } from './components/Footer';
 import { PhotoItem } from './types';
+
+// Global Background Audio Component playing Sounds.mp3 exclusively
+const BackgroundAudio: React.FC = () => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.4;
+
+    const playAudio = () => {
+      audio.play().catch((err) => {
+        console.warn('Autoplay prevented by browser, waiting for user interaction:', err);
+      });
+    };
+
+    playAudio();
+
+    const handleFirstInteraction = () => {
+      playAudio();
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+    };
+
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+    window.addEventListener('touchstart', handleFirstInteraction);
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+    };
+  }, []);
+
+  return (
+    <audio
+      ref={audioRef}
+      loop
+      preload="auto"
+      src={`${import.meta.env.BASE_URL}Sounds.mp3`}
+    />
+  );
+};
 
 export default function App() {
   const [introFinished, setIntroFinished] = useState(false);
@@ -28,6 +76,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#060D1F] text-[#F8F9FA] relative selection:bg-[#D4AF37] selection:text-[#060D1F]">
+      {/* Background Music Player playing Sounds.mp3 */}
+      <BackgroundAudio />
+
       {/* 1. Fullscreen Intro Video Screen */}
       {!introFinished && <IntroVideo onComplete={() => setIntroFinished(true)} />}
 

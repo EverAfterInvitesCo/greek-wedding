@@ -5,11 +5,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
-    // For GitHub Pages deployment:
-    // If deploying to a custom domain (e.g. wedding.com) or username.github.io, keep base as '/' or './'
-    // If deploying to a project repository (e.g. username.github.io/YOUR_REPOSITORY_NAME/),
-    // replace './' below with '/YOUR_REPOSITORY_NAME/'
-    base: process.env.GITHUB_PAGES === 'true' ? '/YOUR_REPOSITORY_NAME/' : './',
+    base: '/greek-wedding/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -17,7 +13,6 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },

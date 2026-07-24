@@ -15,7 +15,8 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ newPhotoTrigger 
 
   const loadGallery = async () => {
     setLoading(true);
-    const data = await fetchPhotos();
+    // Pass 'greek-wedding' to scope photos to this event
+    const data = await fetchPhotos('greek-wedding');
     setPhotos(data);
     setLoading(false);
   };

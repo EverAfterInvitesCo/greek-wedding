@@ -1,9 +1,44 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Camera, ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Bookmark, Upload } from 'lucide-react';
 
 export const GallerySection: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // State to manage photos so you can upload new ones dynamically
+  const [photos, setPhotos] = useState([
+    {
+      url: '',
+      caption: 'Our First Memory',
+      likes: '1,248',
+      comments: '42',
+    },
+    {
+      url: '',
+      caption: 'The Engagement',
+      likes: '2,510',
+      comments: '89',
+    },
+    {
+      url: '',
+      caption: 'Sunset in Santorini',
+      likes: '3,892',
+      comments: '156',
+    },
+    {
+      url: '',
+      caption: 'Aegean Horizons',
+      likes: '951',
+      comments: '24',
+    },
+    {
+      url: '',
+      caption: 'Forever Together',
+      likes: '4,120',
+      comments: '210',
+    },
+  ]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -32,39 +67,20 @@ export const GallerySection: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Replace these placeholder URLs with your own image links or imported assets
-  const photos = [
-    {
-      url: '', // Insert your image URL here
-      caption: 'Our First Memory',
-      likes: '1,248',
-      comments: '42',
-    },
-    {
-      url: '', // Insert your image URL here
-      caption: 'The Engagement',
-      likes: '2,510',
-      comments: '89',
-    },
-    {
-      url: '', // Insert your image URL here
-      caption: 'Sunset in Santorini',
-      likes: '3,892',
-      comments: '156',
-    },
-    {
-      url: '', // Insert your image URL here
-      caption: 'Aegean Horizons',
-      likes: '951',
-      comments: '24',
-    },
-    {
-      url: '', // Insert your image URL here
-      caption: 'Forever Together',
-      likes: '4,120',
-      comments: '210',
-    },
-  ];
+  // Handle local file selection
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const newPhotos = Array.from(files).map((file, index) => ({
+      url: URL.createObjectURL(file),
+      caption: `Uploaded Memory ${photos.length + index + 1}`,
+      likes: '1',
+      comments: '0',
+    }));
+
+    setPhotos((prev) => [...prev, ...newPhotos]);
+  };
 
   return (
     <section id="gallery" className="py-28 bg-[#050B18] relative overflow-hidden">
@@ -72,24 +88,41 @@ export const GallerySection: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Title */}
+        {/* Title & Upload Action Bar */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          className="text-center mb-16 flex flex-col items-center"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0B152C] border border-[#D4AF37]/30 text-[#E5C158] text-xs font-cinzel tracking-[0.25em] uppercase mb-4">
             <Camera className="w-3.5 h-3.5 text-[#D4AF37]" />
             <span>Captured Moments</span>
           </div>
-          <h2 className="font-cormorant text-4xl sm:text-6xl text-white font-light">
+          <h2 className="font-cormorant text-4xl sm:text-6xl text-white font-light mb-4">
             Our <span className="font-cinzel text-[#D4AF37] italic">Moments</span>
           </h2>
-          <p className="mt-3 text-sm sm:text-base font-cinzel text-gray-400 tracking-widest uppercase">
+          <p className="text-sm sm:text-base font-cinzel text-gray-400 tracking-widest uppercase mb-6">
             A glimpse into our journey & love story
           </p>
+
+          {/* Hidden File Input & Upload Trigger Button */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            multiple
+            accept="image/*"
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#D4AF37] text-[#050B18] font-cinzel text-xs font-bold tracking-widest uppercase hover:bg-[#E5C158] transition-all shadow-lg cursor-pointer"
+          >
+            <Upload className="w-4 h-4" />
+            Upload Your Photos
+          </button>
         </motion.div>
 
         {/* Sliding Gallery Container */}
@@ -110,7 +143,7 @@ export const GallerySection: React.FC = () => {
             <ChevronRight className="w-6 h-6" />
           </button>
 
-          {/* Horizontal Scroll Track (Portrait aspect ratios matching reference) */}
+          {/* Horizontal Scroll Track */}
           <div
             ref={scrollRef}
             className="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 sm:px-4"
@@ -131,18 +164,21 @@ export const GallerySection: React.FC = () => {
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105 filter brightness-95"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-[#D4AF37]/20 m-4 rounded-2xl">
-                    <Camera className="w-10 h-10 text-[#D4AF37]/40 mb-3" />
-                    <span className="font-cinzel text-xs text-[#D4AF37]/60 tracking-widest uppercase">
-                      Add Your Image Here
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-[#D4AF37]/30 m-4 rounded-2xl cursor-pointer hover:border-[#D4AF37] transition-colors bg-[#0B152C]/40"
+                  >
+                    <Upload className="w-10 h-10 text-[#D4AF37]/60 mb-3" />
+                    <span className="font-cinzel text-xs text-[#D4AF37] tracking-widest uppercase">
+                      Click to Upload Image
                     </span>
                   </div>
                 )}
                 
-                {/* Gradient Overlay for Readability */}
+                {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050B18] via-[#050B18]/20 to-transparent opacity-95 pointer-events-none" />
 
-                {/* Right Side Social Action Overlays (Matches Reference Layout) */}
+                {/* Right Side Social Action Overlays */}
                 <div className="absolute right-4 bottom-24 flex flex-col items-center gap-5 z-20 text-white">
                   <button className="flex flex-col items-center gap-1 group/btn">
                     <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center group-hover/btn:bg-[#D4AF37] group-hover/btn:text-[#050B18] transition-colors">
@@ -167,7 +203,7 @@ export const GallerySection: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Bottom Caption & Branding Info */}
+                {/* Bottom Caption */}
                 <div className="relative z-10 p-6 sm:p-8 pr-20">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-6 h-6 rounded-full bg-[#D4AF37] text-[#050B18] font-cinzel text-[10px] font-bold flex items-center justify-center">

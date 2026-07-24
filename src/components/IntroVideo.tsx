@@ -75,8 +75,8 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
               onError={() => setVideoError(true)}
               className="absolute inset-0 w-full h-full object-cover z-0"
             >
-              <source src="/intro.mp4" type="video/mp4" />
-              <source src="/Intro.mp4" type="video/mp4" />
+              <source src={`${import.meta.env.BASE_URL}intro.mp4`} type="video/mp4" />
+              <source src={`${import.meta.env.BASE_URL}Intro.mp4`} type="video/mp4" />
             </video>
           ) : (
             /* Fallback luxury visual if intro.mp4 is missing */

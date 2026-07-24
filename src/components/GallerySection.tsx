@@ -5,8 +5,9 @@ import { Camera, ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Bookma
 export const GallerySection: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
-  // State to manage photos so you can upload new ones dynamically
+  // State to manage photos
   const [photos, setPhotos] = useState([
     {
       url: '',
@@ -48,24 +49,25 @@ export const GallerySection: React.FC = () => {
     }
   };
 
-  // Auto-slide effect when component is in view
+  // Continuous smooth auto-scroll effect
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
 
-    const interval = setInterval(() => {
-      if (!container) return;
-      const maxScrollLeft = container.scrollWidth - container.clientWidth;
-      
-      if (container.scrollLeft >= maxScrollLeft - 10) {
-        container.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        container.scrollBy({ left: 320, behavior: 'smooth' });
+    const scrollInterval = setInterval(() => {
+      if (!isHovered && container) {
+        const maxScrollLeft = container.scrollWidth - container.clientWidth;
+        
+        if (container.scrollLeft >= maxScrollLeft - 5) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          container.scrollBy({ left: 1, behavior: 'auto' });
+        }
       }
-    }, 4000);
+    }, 25); // Controls continuous smooth scroll speed
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(scrollInterval);
+  }, [isHovered]);
 
   // Handle local file selection
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +76,7 @@ export const GallerySection: React.FC = () => {
 
     const newPhotos = Array.from(files).map((file, index) => ({
       url: URL.createObjectURL(file),
-      caption: `Uploaded Memory ${photos.length + index + 1}`,
+      caption: `Memory ${photos.length + index + 1}`,
       likes: '1',
       comments: '0',
     }));
@@ -126,7 +128,11 @@ export const GallerySection: React.FC = () => {
         </motion.div>
 
         {/* Sliding Gallery Container */}
-        <div className="relative group">
+        <div 
+          className="relative group"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           {/* Desktop Navigation Buttons */}
           <button
             onClick={() => scroll('left')}
@@ -146,7 +152,7 @@ export const GallerySection: React.FC = () => {
           {/* Horizontal Scroll Track */}
           <div
             ref={scrollRef}
-            className="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 sm:px-4"
+            className="flex gap-6 overflow-x-auto pb-6 pt-2 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 sm:px-4"
           >
             {photos.map((photo, index) => (
               <motion.div
@@ -155,7 +161,7 @@ export const GallerySection: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="min-w-[280px] sm:min-w-[340px] lg:min-w-[380px] h-[500px] sm:h-[600px] snap-center rounded-[32px] overflow-hidden glass-panel border border-[#D4AF37]/30 relative group/card flex-shrink-0 shadow-2xl bg-[#0B152C]/60 flex flex-col justify-end"
+                className="min-w-[280px] sm:min-w-[340px] lg:min-w-[380px] h-[500px] sm:h-[600px] rounded-[32px] overflow-hidden glass-panel border border-[#D4AF37]/30 relative group/card flex-shrink-0 shadow-2xl bg-[#0B152C]/60 flex flex-col justify-end"
               >
                 {photo.url ? (
                   <img
@@ -207,10 +213,10 @@ export const GallerySection: React.FC = () => {
                 <div className="relative z-10 p-6 sm:p-8 pr-20">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-6 h-6 rounded-full bg-[#D4AF37] text-[#050B18] font-cinzel text-[10px] font-bold flex items-center justify-center">
-                      E
+                      ✨
                     </div>
                     <span className="text-xs font-cinzel text-[#E5C158] tracking-widest uppercase">
-                      EverAfter Invites
+                      Wedding Gallery
                     </span>
                   </div>
                   <h4 className="font-cormorant text-2xl sm:text-3xl text-white font-medium mb-1">
@@ -228,7 +234,7 @@ export const GallerySection: React.FC = () => {
         {/* Swipe instruction hint */}
         <div className="text-center mt-6">
           <span className="font-cinzel text-[10px] tracking-widest text-gray-500 uppercase">
-            ← Swipe horizontally or let it auto-play →
+            ← Continuous auto-scrolling (Hover to pause) →
           </span>
         </div>
       </div>

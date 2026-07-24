@@ -48,7 +48,14 @@ export const PhotoUploadSection: React.FC<PhotoUploadSectionProps> = ({ onPhotoU
     setProgress(10);
     setErrorMsg('');
 
-    const res = await uploadGuestPhoto(file, uploaderName, caption, (p) => setProgress(p));
+    // Pass 'greek-wedding' along with the upload data
+    const res = await uploadGuestPhoto(
+      file,
+      uploaderName,
+      caption,
+      (p) => setProgress(p),
+      'greek-wedding'
+    );
     setUploading(false);
 
     if (res.success && res.photo) {

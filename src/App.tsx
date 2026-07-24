@@ -4,7 +4,7 @@ import { IntroVideo } from './components/IntroVideo';
 import { HeroSection } from './components/HeroSection';
 import { OurStory } from './components/OurStory';
 import { VenueSection } from './components/VenueSection';
-import { Schedule } from './components/Schedule';
+import { WeddingsSchedule } from './components/WeddingsSchedule';
 import { RSVPSection } from './components/RSVPSection';
 import { GallerySection } from './components/GallerySection';
 import { OrganizerPortal } from './components/OrganizerPortal';
@@ -61,7 +61,7 @@ export function App() {
         <HeroSection />
         <OurStory />
         <VenueSection />
-        <Schedule />
+        <WeddingsSchedule />
         <RSVPSection />
         <GallerySection />
       </main>

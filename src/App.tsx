@@ -1,16 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Navigation } from './components/Navigation';
-import { IntroVideo } from './components/IntroVideo';
-import { Hero } from './components/Hero';
-import { Story } from './components/Story';
-import { Venue } from './components/Venue';
-import { Schedule } from './components/Schedule';
-import { RSVP } from './components/RSVP';
-import { Gallery } from './components/Gallery';
-import { OrganizerPortal } from './components/OrganizerPortal';
 
 export function App() {
-  const [showIntro, setShowIntro] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [organizerOpen, setOrganizerOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -28,13 +19,6 @@ export function App() {
     }
   };
 
-  const handleIntroComplete = () => {
-    setShowIntro(false);
-    if (audioRef.current && !isPlaying) {
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#050B18] text-[#F8F9FA] selection:bg-[#D4AF37] selection:text-[#050B18]">
       {/* Global Background Music Element */}
@@ -45,9 +29,6 @@ export function App() {
         preload="auto" 
       />
 
-      {/* Intro Opening Video */}
-      {showIntro && <IntroVideo onComplete={handleIntroComplete} />}
-
       {/* Navigation Bar Linked to Global Audio */}
       <Navigation 
         onOpenOrganizer={() => setOrganizerOpen(true)} 
@@ -55,28 +36,13 @@ export function App() {
         onTogglePlay={togglePlayAudio} 
       />
 
-      {/* Main Website Content Sections */}
-      <main id="story">
-        <Hero />
-        <Story />
-        <div id="venue">
-          <Venue />
-        </div>
-        <div id="schedule">
-          <Schedule />
-        </div>
-        <div id="rsvp">
-          <RSVP />
-        </div>
-        <div id="gallery">
-          <Gallery />
+      {/* Main Content Area */}
+      <main className="pt-24 px-4 max-w-7xl mx-auto text-center">
+        <div id="story" className="py-20">
+          <h1 className="font-cinzel text-4xl text-[#E5C158] mb-4">Farah & Seif</h1>
+          <p className="text-gray-300 font-serif italic text-lg">September 18, 2027 • Santorini, Greece</p>
         </div>
       </main>
-
-      {/* Organizer Portal Modal */}
-      {organizerOpen && (
-        <OrganizerPortal onClose={() => setOrganizerOpen(false)} />
-      )}
     </div>
   );
 }

@@ -11,57 +11,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const LOCAL_RSVP_KEY = 'farah_seif_rsvps_v1';
 const LOCAL_PHOTOS_KEY = 'farah_seif_photos_v1';
 
-// Default initial photos for guest gallery (Luxury Greek Destination Aesthetic)
-export const DEFAULT_GALLERY_PHOTOS: PhotoItem[] = [
-  {
-    id: 'def-1',
-    created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-    url: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=85',
-    uploader_name: 'Farah & Seif',
-    caption: 'Sunset in Oia, Santorini',
-    is_approved: true,
-  },
-  {
-    id: 'def-2',
-    created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
-    url: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1200&q=85',
-    uploader_name: 'Farah & Seif',
-    caption: 'Aegean Sea Horizon',
-    is_approved: true,
-  },
-  {
-    id: 'def-3',
-    created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-    url: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=85',
-    uploader_name: 'Wedding Studio',
-    caption: 'Canaves Oia Sunset Terrace',
-    is_approved: true,
-  },
-  {
-    id: 'def-4',
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-    url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=85',
-    uploader_name: 'Farah & Seif',
-    caption: 'Engagement Memories',
-    is_approved: true,
-  },
-  {
-    id: 'def-5',
-    created_at: new Date(Date.now() - 86400000 * 1).toISOString(),
-    url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=85',
-    uploader_name: 'Everafter Invites',
-    caption: 'Mediterranean Royalty',
-    is_approved: true,
-  },
-  {
-    id: 'def-6',
-    created_at: new Date().toISOString(),
-    url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=85',
-    uploader_name: 'Farah & Seif',
-    caption: 'Golden Hour Reflection',
-    is_approved: true,
-  },
-];
+// Default initial photos set to empty array so the gallery starts completely clean
+export const DEFAULT_GALLERY_PHOTOS: PhotoItem[] = [];
 
 // Canvas Image Compression Utility
 export async function compressImage(file: File, maxWidth = 1600, quality = 0.85): Promise<Blob> {

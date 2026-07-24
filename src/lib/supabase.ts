@@ -3,7 +3,7 @@ import { RSVP, PhotoItem } from '../types';
 
 export const SUPABASE_URL = ((import.meta as any).env?.VITE_SUPABASE_URL as string) || 'https://pvuszjcuvkycprbggweo.supabase.co';
 export const SUPABASE_ANON_KEY = ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string) || 'sb_publishable_xPvR3HkIozZaxNLxPCIRfw_dvljpvdV';
-export const WEDDING_SLUG = ((import.meta as any).env?.VITE_WEDDING_SLUG as string) || 'farahandseif';
+export const WEDDING_SLUG = ((import.meta as any).env?.VITE_WEDDING_SLUG as string) || 'greek-wedding';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -111,68 +111,71 @@ export async function compressImage(file: File, maxWidth = 1600, quality = 0.85)
   });
 }
 
-// RSVP Operations
+// RSVP Operations mapped to exact Supabase schema columns
 export async function submitRSVP(rsvpData: RSVP): Promise<{ success: boolean; message: string; data?: RSVP }> {
-  const payloadWithSlug = {
-    ...rsvpData,
+  // Map application fields to exact table schema column names
+  const dbPayload = {
     wedding_slug: WEDDING_SLUG,
-    created_at: new Date().toISOString(),
-  };
-
-  const payloadWithoutSlug = {
-    ...rsvpData,
+    fullName: rsvpData.guest_name,
+    email: rsvpData.email || '',
+    attending: rsvpData.attendance === 'yes',
+    guestsCount: rsvpData.number_of_guests || 1,
+    dietaryNotes: rsvpData.dietary_notes || 'None',
+    wellWishes: rsvpData.message || '',
     created_at: new Date().toISOString(),
   };
 
   try {
-    // 1. Try Supabase insert with wedding_slug
-    let { data, error } = await supabase.from('rsvps').insert([payloadWithSlug]).select().single();
-
-    // 2. If column not present, retry without wedding_slug
-    if (error && (error.code === 'PGRST204' || error.message?.includes('wedding_slug'))) {
-      const retry = await supabase.from('rsvps').insert([payloadWithoutSlug]).select().single();
-      data = retry.data;
-      error = retry.error;
-    }
+    const { data, error } = await supabase.from('rsvps').insert([dbPayload]).select().single();
 
     if (error) {
-      console.warn('Supabase RSVP insert note/fallback:', error.message);
-      saveLocalRSVP(payloadWithSlug);
-      return { success: true, message: 'RSVP saved successfully!', data: payloadWithSlug };
+      console.warn('Supabase RSVP insert error:', error.message);
+      saveLocalRSVP(rsvpData);
+      return { success: true, message: 'RSVP saved locally!', data: rsvpData };
     }
 
-    saveLocalRSVP(data || payloadWithSlug);
-    return { success: true, message: 'RSVP submitted successfully!', data: data || payloadWithSlug };
+    saveLocalRSVP(rsvpData);
+    return { success: true, message: 'RSVP submitted successfully!', data: rsvpData };
   } catch (err: any) {
     console.warn('Network or Supabase exception, saving locally:', err?.message);
-    saveLocalRSVP(payloadWithSlug);
-    return { success: true, message: 'RSVP recorded successfully!', data: payloadWithSlug };
+    saveLocalRSVP(rsvpData);
+    return { success: true, message: 'RSVP recorded successfully!', data: rsvpData };
   }
 }
 
-export async function fetchRSVPs(): Promise<RSVP[]> {
+export async function fetchRSVPs(slugFilter: string = WEDDING_SLUG): Promise<RSVP[]> {
   try {
-    // Try fetching with wedding_slug filter first
     let { data, error } = await supabase
       .from('rsvps')
       .select('*')
-      .eq('wedding_slug', WEDDING_SLUG)
+      .eq('wedding_slug', slugFilter)
       .order('created_at', { ascending: false });
 
     if (error || !data || data.length === 0) {
-      // Fallback: fetch all rsvps
       const fallback = await supabase.from('rsvps').select('*').order('created_at', { ascending: false });
       if (!fallback.error && fallback.data && fallback.data.length > 0) {
         data = fallback.data;
       }
     }
 
-    const dbRSVPs = (data || []) as RSVP[];
+    // Map database schema row fields back to application RSVP type
+    const dbRSVPs: RSVP[] = (data || []).map((row: any) => ({
+      id: row.id?.toString(),
+      guest_name: row.fullName || row.guest_name || '',
+      phone_number: row.phone_number || '', // Note: phone column if added later, or fallback
+      email: row.email || '',
+      number_of_guests: row.guestsCount || row.number_of_guests || 1,
+      attendance: row.attending === true || row.attending === 'true' ? 'yes' : 'no',
+      dietary_notes: row.dietaryNotes || row.dietary_notes || '',
+      message: row.wellWishes || row.message || '',
+      created_at: row.created_at,
+    }));
+
     const localRSVPs = getLocalRSVPs();
     const combined = [
       ...dbRSVPs,
       ...localRSVPs.filter(
-        (l) => !dbRSVPs.some((d) => d.id === l.id || (d.phone_number === l.phone_number && d.guest_name === l.guest_name))
+        (l) => !dbRSVPs.some((d) => d.id === l.id || (d.guest_name === l.guest_name))
       ),
     ];
     return combined;
@@ -200,14 +203,12 @@ export async function uploadGuestPhoto(
 ): Promise<{ success: boolean; photo?: PhotoItem; error?: string }> {
   try {
     onProgress?.(15);
-    // Compress image
     const compressedBlob = await compressImage(file, 1600, 0.85);
     onProgress?.(40);
 
     const fileName = `${WEDDING_SLUG}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
     let imageUrl = '';
 
-    // Buckets to attempt upload
     const bucketsToTry = ['wedding-photos', 'photos', 'farahandseif'];
 
     for (const bucket of bucketsToTry) {
@@ -232,7 +233,6 @@ export async function uploadGuestPhoto(
 
     onProgress?.(75);
 
-    // If storage didn't return a public URL, create a base64 Data URL for immediate display
     if (!imageUrl) {
       imageUrl = await new Promise<string>((resolve) => {
         const r = new FileReader();
@@ -251,13 +251,8 @@ export async function uploadGuestPhoto(
       is_approved: true,
     };
 
-    // Attempt DB save
     try {
-      const { error } = await supabase.from('photos').insert([newPhoto]);
-      if (error && (error.code === 'PGRST204' || error.message?.includes('wedding_slug'))) {
-        const { wedding_slug, ...photoWithoutSlug } = newPhoto;
-        await supabase.from('photos').insert([photoWithoutSlug]);
-      }
+      await supabase.from('photos').insert([newPhoto]);
     } catch (dbErr) {
       console.warn('Database photo record fallback:', dbErr);
     }
@@ -271,12 +266,12 @@ export async function uploadGuestPhoto(
   }
 }
 
-export async function fetchPhotos(): Promise<PhotoItem[]> {
+export async function fetchPhotos(slugFilter: string = WEDDING_SLUG): Promise<PhotoItem[]> {
   try {
     let { data, error } = await supabase
       .from('photos')
       .select('*')
-      .eq('wedding_slug', WEDDING_SLUG)
+      .eq('wedding_slug', slugFilter)
       .order('created_at', { ascending: false });
 
     if (error || !data || data.length === 0) {
@@ -317,7 +312,7 @@ function getLocalRSVPs(): RSVP[] {
 
 function saveLocalRSVP(rsvp: RSVP) {
   const current = getLocalRSVPs();
-  const filtered = current.filter(r => r.phone_number !== rsvp.phone_number && r.id !== rsvp.id);
+  const filtered = current.filter(r => r.guest_name !== rsvp.guest_name && r.id !== rsvp.id);
   const updated = [rsvp, ...filtered];
   localStorage.setItem(LOCAL_RSVP_KEY, JSON.stringify(updated));
 }

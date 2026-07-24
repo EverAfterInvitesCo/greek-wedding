@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Volume2, VolumeX, FastForward } from 'lucide-react';
+import { FastForward } from 'lucide-react';
 
 interface IntroVideoProps {
   onComplete: () => void;
@@ -10,7 +10,6 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
   const [hasEnded, setHasEnded] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [videoError, setVideoError] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -26,19 +25,10 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
     if (!hasStarted) {
       setHasStarted(true);
       if (videoRef.current && !videoError) {
-        videoRef.current.muted = false;
-        setIsMuted(false);
+        videoRef.current.muted = true; // Kept muted so it never clashes with Sounds.mp3
         videoRef.current
           .play()
-          .catch((err) => {
-            console.warn('Playback error or muted retry:', err);
-            // Fallback to muted play if browser blocks unmuted sound
-            if (videoRef.current) {
-              videoRef.current.muted = true;
-              setIsMuted(true);
-              videoRef.current.play().catch(() => setVideoError(true));
-            }
-          });
+          .catch(() => setVideoError(true));
       } else if (videoError) {
         handleEnter();
       }
@@ -64,13 +54,14 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
             !hasStarted ? 'cursor-pointer select-none' : ''
           }`}
         >
-          {/* Native Video - Pure & clear without CSS filters */}
+          {/* Native Video - Muted to let Sounds.mp3 handle all audio */}
           {!videoError ? (
             <video
               ref={videoRef}
               playsInline
               preload="auto"
-              muted={isMuted}
+              muted
+              autoPlay={false}
               onEnded={handleEnter}
               onError={() => setVideoError(true)}
               className="absolute inset-0 w-full h-full object-cover z-0"
@@ -113,7 +104,7 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
                   Santorini, Greece • September 18, 2027
                 </p>
 
-                {/* Subtle text prompt - NOT a button */}
+                {/* Subtle text prompt */}
                 <motion.p
                   animate={{ opacity: [0.6, 1, 0.6] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -125,23 +116,9 @@ export const IntroVideo: React.FC<IntroVideoProps> = ({ onComplete }) => {
             )}
           </AnimatePresence>
 
-          {/* Minimal Controls During Video Playback */}
+          {/* Minimal Skip Button During Video Playback */}
           {hasStarted && (
             <div className="absolute bottom-8 right-8 z-30 flex items-center gap-4">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (videoRef.current) {
-                    videoRef.current.muted = !isMuted;
-                    setIsMuted(!isMuted);
-                  }
-                }}
-                className="p-3 rounded-full bg-[#0B152C]/80 border border-[#D4AF37]/40 text-[#E5C158] hover:bg-[#D4AF37] hover:text-[#050B18] transition-all backdrop-blur-md shadow-lg cursor-pointer"
-                title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-              >
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-              </button>
-
               <button
                 onClick={(e) => {
                   e.stopPropagation();

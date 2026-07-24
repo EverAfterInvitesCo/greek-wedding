@@ -7,6 +7,7 @@ import { submitRSVP } from '../lib/supabase';
 
 export const RSVPSection: React.FC = () => {
   const [formData, setFormData] = useState<RSVP>({
+    wedding_slug: 'greek-wedding',
     guest_name: '',
     phone_number: '',
     email: '',
@@ -294,6 +295,7 @@ export const RSVPSection: React.FC = () => {
                   onClick={() => {
                     setSubmitted(false);
                     setFormData({
+                      wedding_slug: 'greek-wedding',
                       guest_name: '',
                       phone_number: '',
                       email: '',

@@ -113,7 +113,6 @@ export async function compressImage(file: File, maxWidth = 1600, quality = 0.85)
 
 // RSVP Operations mapped to exact Supabase schema columns
 export async function submitRSVP(rsvpData: RSVP): Promise<{ success: boolean; message: string; data?: RSVP }> {
-  // Map application fields to exact table schema column names
   const dbPayload = {
     wedding_slug: WEDDING_SLUG,
     fullName: rsvpData.guest_name,
@@ -158,11 +157,10 @@ export async function fetchRSVPs(slugFilter: string = WEDDING_SLUG): Promise<RSV
       }
     }
 
-    // Map database schema row fields back to application RSVP type
     const dbRSVPs: RSVP[] = (data || []).map((row: any) => ({
       id: row.id?.toString(),
       guest_name: row.fullName || row.guest_name || '',
-      phone_number: row.phone_number || '', // Note: phone column if added later, or fallback
+      phone_number: row.phone_number || '',
       email: row.email || '',
       number_of_guests: row.guestsCount || row.number_of_guests || 1,
       attendance: row.attending === true || row.attending === 'true' ? 'yes' : 'no',
@@ -187,14 +185,12 @@ export async function fetchRSVPs(slugFilter: string = WEDDING_SLUG): Promise<RSV
 export async function deleteRSVP(id: string): Promise<boolean> {
   try {
     await supabase.from('rsvps').delete().eq('id', id);
-  } catch (e) {
-    // Ignore error
-  }
+  } catch (e) {}
   deleteLocalRSVP(id);
   return true;
 }
 
-// Photo Operations
+// Photo Operations - Mapped to 'guest_photos' table matching your Supabase schema
 export async function uploadGuestPhoto(
   file: File,
   uploaderName: string,
@@ -226,9 +222,7 @@ export async function uploadGuestPhoto(
           imageUrl = urlData.publicUrl;
           break;
         }
-      } catch (storageErr) {
-        // Continue to next bucket option
-      }
+      } catch (storageErr) {}
     }
 
     onProgress?.(75);
@@ -241,26 +235,30 @@ export async function uploadGuestPhoto(
       });
     }
 
-    const newPhoto: PhotoItem = {
+    const newPhotoRow = {
       id: 'photo_' + Date.now(),
-      created_at: new Date().toISOString(),
       wedding_slug: WEDDING_SLUG,
       url: imageUrl,
       uploader_name: uploaderName || 'Guest',
       caption: caption || 'Greek Wedding Memories',
-      is_approved: true,
+      created_at: new Date().toISOString(),
     };
 
     try {
-      await supabase.from('photos').insert([newPhoto]);
+      await supabase.from('guest_photos').insert([newPhotoRow]);
     } catch (dbErr) {
-      console.warn('Database photo record fallback:', dbErr);
+      console.warn('Database guest_photos record fallback:', dbErr);
     }
 
-    saveLocalPhoto(newPhoto);
+    const photoItem: PhotoItem = {
+      ...newPhotoRow,
+      is_approved: true,
+    };
+
+    saveLocalPhoto(photoItem);
     onProgress?.(100);
 
-    return { success: true, photo: newPhoto };
+    return { success: true, photo: photoItem };
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to process photo upload' };
   }
@@ -269,19 +267,23 @@ export async function uploadGuestPhoto(
 export async function fetchPhotos(slugFilter: string = WEDDING_SLUG): Promise<PhotoItem[]> {
   try {
     let { data, error } = await supabase
-      .from('photos')
+      .from('guest_photos')
       .select('*')
       .eq('wedding_slug', slugFilter)
       .order('created_at', { ascending: false });
 
     if (error || !data || data.length === 0) {
-      const fallback = await supabase.from('photos').select('*').order('created_at', { ascending: false });
+      const fallback = await supabase.from('guest_photos').select('*').order('created_at', { ascending: false });
       if (!fallback.error && fallback.data && fallback.data.length > 0) {
         data = fallback.data;
       }
     }
 
-    const dbPhotos = (data || []) as PhotoItem[];
+    const dbPhotos = (data || []).map((row: any) => ({
+      ...row,
+      is_approved: true,
+    })) as PhotoItem[];
+
     const localPhotos = getLocalPhotos();
     const combined = [...dbPhotos, ...localPhotos.filter((lp) => !dbPhotos.some((dp) => dp.id === lp.id))];
     return combined;
@@ -292,10 +294,8 @@ export async function fetchPhotos(slugFilter: string = WEDDING_SLUG): Promise<Ph
 
 export async function deletePhoto(id: string): Promise<boolean> {
   try {
-    await supabase.from('photos').delete().eq('id', id);
-  } catch (e) {
-    // Ignore error
-  }
+    await supabase.from('guest_photos').delete().eq('id', id);
+  } catch (e) {}
   deleteLocalPhoto(id);
   return true;
 }
@@ -339,9 +339,7 @@ function saveLocalPhoto(photo: PhotoItem) {
     const custom: PhotoItem[] = raw ? JSON.parse(raw) : [];
     const updated = [photo, ...custom];
     localStorage.setItem(LOCAL_PHOTOS_KEY, JSON.stringify(updated));
-  } catch (e) {
-    console.warn('LocalStorage full or unaccessible for photo save', e);
-  }
+  } catch (e) {}
 }
 
 function deleteLocalPhoto(id: string) {
@@ -350,7 +348,5 @@ function deleteLocalPhoto(id: string) {
     const custom: PhotoItem[] = raw ? JSON.parse(raw) : [];
     const updated = custom.filter(p => p.id !== id);
     localStorage.setItem(LOCAL_PHOTOS_KEY, JSON.stringify(updated));
-  } catch (e) {
-    // Ignore error
-  }
+  } catch (e) {}
 }

@@ -64,6 +64,14 @@ export default function App() {
   const [organizerOpen, setOrganizerOpen] = useState(false);
   const [newlyUploadedPhoto, setNewlyUploadedPhoto] = useState<PhotoItem | null>(null);
 
+  // Always force scroll to top on refresh or initial load
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#060D1F] text-[#F8F9FA] relative selection:bg-[#D4AF37] selection:text-[#060D1F]">
       {/* Background Music Player */}

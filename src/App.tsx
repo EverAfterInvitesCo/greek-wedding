@@ -43,6 +43,8 @@ const BackgroundAudio: React.FC = () => {
     window.addEventListener('touchstart', handleFirstInteraction);
 
     return () => {
+      audio.pause();
+      audio.currentTime = 0;
       window.removeEventListener('click', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
       window.removeEventListener('touchstart', handleFirstInteraction);

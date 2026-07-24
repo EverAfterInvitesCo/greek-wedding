@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IntroVideo } from './components/IntroVideo';
 import { Navigation } from './components/Navigation';
 import { HeroSection } from './components/HeroSection';
@@ -13,6 +13,52 @@ import { OrganizerPortal } from './components/OrganizerPortal';
 import { Footer } from './components/Footer';
 import { PhotoItem } from './types';
 
+// Global Background Audio Component
+const BackgroundAudio: React.FC = () => {
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = 0.4;
+
+    const playAudio = () => {
+      audio.play().catch((err) => {
+        console.warn('Autoplay prevented by browser, waiting for user interaction:', err);
+      });
+    };
+
+    playAudio();
+
+    const handleFirstInteraction = () => {
+      playAudio();
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+    };
+
+    window.addEventListener('click', handleFirstInteraction);
+    window.addEventListener('keydown', handleFirstInteraction);
+    window.addEventListener('touchstart', handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener('click', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+    };
+  }, []);
+
+  return (
+    <audio
+      ref={audioRef}
+      loop
+      preload="auto"
+      src={`${import.meta.env.BASE_URL}sounds.mp3`}
+    />
+  );
+};
+
 export default function App() {
   const [introFinished, setIntroFinished] = useState(false);
   const [organizerOpen, setOrganizerOpen] = useState(false);
@@ -20,6 +66,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#060D1F] text-[#F8F9FA] relative selection:bg-[#D4AF37] selection:text-[#060D1F]">
+      {/* Background Music Player */}
+      <BackgroundAudio />
+
       {/* 1. Fullscreen Intro Video Screen */}
       {!introFinished && <IntroVideo onComplete={() => setIntroFinished(true)} />}
 

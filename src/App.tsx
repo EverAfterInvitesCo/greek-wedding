@@ -1,7 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { Navigation } from './components/Navigation';
 import { IntroVideo } from './components/IntroVideo';
-// Make sure to import any other components you are using (Hero, OurStory, Venue, Schedule, RSVP, Gallery, OrganizerPortal, etc.)
+import { Hero } from './components/Hero';
+import { Story } from './components/Story';
+import { Venue } from './components/Venue';
+import { Schedule } from './components/Schedule';
+import { RSVP } from './components/RSVP';
+import { Gallery } from './components/Gallery';
+import { OrganizerPortal } from './components/OrganizerPortal';
 
 export function App() {
   const [showIntro, setShowIntro] = useState(true);
@@ -24,7 +30,6 @@ export function App() {
 
   const handleIntroComplete = () => {
     setShowIntro(false);
-    // Optionally auto-play audio when intro completes if desired:
     if (audioRef.current && !isPlaying) {
       audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
     }
@@ -40,7 +45,7 @@ export function App() {
         preload="auto" 
       />
 
-      {/* Optional Intro Opening Video */}
+      {/* Intro Opening Video */}
       {showIntro && <IntroVideo onComplete={handleIntroComplete} />}
 
       {/* Navigation Bar Linked to Global Audio */}
@@ -50,10 +55,28 @@ export function App() {
         onTogglePlay={togglePlayAudio} 
       />
 
-      {/* Main Website Sections */}
-      <main>
-        {/* Place your components here (e.g., Hero, Story, Venue, Schedule, RSVP, Gallery) */}
+      {/* Main Website Content Sections */}
+      <main id="story">
+        <Hero />
+        <Story />
+        <div id="venue">
+          <Venue />
+        </div>
+        <div id="schedule">
+          <Schedule />
+        </div>
+        <div id="rsvp">
+          <RSVP />
+        </div>
+        <div id="gallery">
+          <Gallery />
+        </div>
       </main>
+
+      {/* Organizer Portal Modal */}
+      {organizerOpen && (
+        <OrganizerPortal onClose={() => setOrganizerOpen(false)} />
+      )}
     </div>
   );
 }

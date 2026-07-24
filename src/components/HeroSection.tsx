@@ -17,8 +17,7 @@ export const HeroSection: React.FC = () => {
           onError={() => setVideoError(true)}
           className="absolute inset-0 w-full h-full object-cover z-0 scale-105"
         >
-          <source src="/Greek.mp4" type="video/mp4" />
-          <source src="/Greek.mp4" type="video/mp4" />
+          <source src={`${import.meta.env.BASE_URL}Greek.mp4`} type="video/mp4" />
         </video>
       ) : (
         /* Fallback Santorini Sunset Canvas Background */

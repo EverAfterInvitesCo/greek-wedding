@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Camera, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 
 export const GallerySection: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -13,26 +13,56 @@ export const GallerySection: React.FC = () => {
     }
   };
 
+  // Auto-slide effect when component is in view
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const interval = setInterval(() => {
+      if (!container) return;
+      const maxScrollLeft = container.scrollWidth - container.clientWidth;
+      
+      if (container.scrollLeft >= maxScrollLeft - 10) {
+        container.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        container.scrollBy({ left: 320, behavior: 'smooth' });
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Replace these placeholder URLs with your own image links or imported assets
   const photos = [
     {
-      url: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Santorini Sunset Engagement',
+      url: '', // Insert your image URL here
+      caption: 'Our First Memory',
+      likes: '1,248',
+      comments: '42',
     },
     {
-      url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Aegean Blue Moments',
+      url: '', // Insert your image URL here
+      caption: 'The Engagement',
+      likes: '2,510',
+      comments: '89',
     },
     {
-      url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80',
-      caption: 'The Cliffs of Oia',
+      url: '', // Insert your image URL here
+      caption: 'Sunset in Santorini',
+      likes: '3,892',
+      comments: '156',
     },
     {
-      url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Golden Hour Vows',
+      url: '', // Insert your image URL here
+      caption: 'Aegean Horizons',
+      likes: '951',
+      comments: '24',
     },
     {
-      url: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&w=1200&q=80',
+      url: '', // Insert your image URL here
       caption: 'Forever Together',
+      likes: '4,120',
+      comments: '210',
     },
   ];
 
@@ -55,7 +85,7 @@ export const GallerySection: React.FC = () => {
             <span>Captured Moments</span>
           </div>
           <h2 className="font-cormorant text-4xl sm:text-6xl text-white font-light">
-            Our <span className="font-cinzel text-[#D4AF37] italic">Gallery</span>
+            Our <span className="font-cinzel text-[#D4AF37] italic">Moments</span>
           </h2>
           <p className="mt-3 text-sm sm:text-base font-cinzel text-gray-400 tracking-widest uppercase">
             A glimpse into our journey & love story
@@ -80,7 +110,7 @@ export const GallerySection: React.FC = () => {
             <ChevronRight className="w-6 h-6" />
           </button>
 
-          {/* Horizontal Scroll Track */}
+          {/* Horizontal Scroll Track (Portrait aspect ratios matching reference) */}
           <div
             ref={scrollRef}
             className="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 sm:px-4"
@@ -92,40 +122,77 @@ export const GallerySection: React.FC = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="min-w-[280px] sm:min-w-[380px] lg:min-w-[420px] h-[400px] sm:h-[480px] snap-center rounded-3xl overflow-hidden glass-panel border border-[#D4AF37]/30 relative group/card flex-shrink-0 shadow-2xl"
+                className="min-w-[280px] sm:min-w-[340px] lg:min-w-[380px] h-[500px] sm:h-[600px] snap-center rounded-[32px] overflow-hidden glass-panel border border-[#D4AF37]/30 relative group/card flex-shrink-0 shadow-2xl bg-[#0B152C]/60 flex flex-col justify-end"
               >
-                <img
-                  src={photo.url}
-                  alt={photo.caption}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110 filter brightness-90 group-hover/card:brightness-100"
-                />
-                
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050B18] via-transparent to-transparent opacity-80 group-hover/card:opacity-60 transition-opacity" />
-
-                {/* Caption Content */}
-                <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 flex items-center justify-between transform transition-transform duration-500">
-                  <div>
-                    <span className="text-[10px] sm:text-xs font-cinzel text-[#E5C158] tracking-[0.2em] uppercase block mb-1">
-                      Santorini 2027
+                {photo.url ? (
+                  <img
+                    src={photo.url}
+                    alt={photo.caption}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105 filter brightness-95"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-[#D4AF37]/20 m-4 rounded-2xl">
+                    <Camera className="w-10 h-10 text-[#D4AF37]/40 mb-3" />
+                    <span className="font-cinzel text-xs text-[#D4AF37]/60 tracking-widest uppercase">
+                      Add Your Image Here
                     </span>
-                    <h4 className="font-cormorant text-xl sm:text-2xl text-white font-medium">
-                      {photo.caption}
-                    </h4>
                   </div>
-                  <div className="w-10 h-10 rounded-full bg-[#0B152C]/80 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] backdrop-blur-md">
-                    <Heart className="w-4 h-4 fill-[#D4AF37]/30" />
+                )}
+                
+                {/* Gradient Overlay for Readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050B18] via-[#050B18]/20 to-transparent opacity-95 pointer-events-none" />
+
+                {/* Right Side Social Action Overlays (Matches Reference Layout) */}
+                <div className="absolute right-4 bottom-24 flex flex-col items-center gap-5 z-20 text-white">
+                  <button className="flex flex-col items-center gap-1 group/btn">
+                    <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center group-hover/btn:bg-[#D4AF37] group-hover/btn:text-[#050B18] transition-colors">
+                      <Heart className="w-5 h-5" />
+                    </div>
+                    <span className="text-[11px] font-sans tracking-wider">{photo.likes}</span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1 group/btn">
+                    <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center group-hover/btn:bg-[#D4AF37] group-hover/btn:text-[#050B18] transition-colors">
+                      <MessageCircle className="w-5 h-5" />
+                    </div>
+                    <span className="text-[11px] font-sans tracking-wider">{photo.comments}</span>
+                  </button>
+
+                  <button className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-[#D4AF37] hover:text-[#050B18] transition-colors">
+                    <Share2 className="w-4 h-4" />
+                  </button>
+
+                  <button className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-[#D4AF37] hover:text-[#050B18] transition-colors">
+                    <Bookmark className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Bottom Caption & Branding Info */}
+                <div className="relative z-10 p-6 sm:p-8 pr-20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 rounded-full bg-[#D4AF37] text-[#050B18] font-cinzel text-[10px] font-bold flex items-center justify-center">
+                      E
+                    </div>
+                    <span className="text-xs font-cinzel text-[#E5C158] tracking-widest uppercase">
+                      EverAfter Invites
+                    </span>
                   </div>
+                  <h4 className="font-cormorant text-2xl sm:text-3xl text-white font-medium mb-1">
+                    {photo.caption}
+                  </h4>
+                  <p className="font-sans text-xs text-gray-300 font-light line-clamp-1">
+                    Celebrating love under the Greek sky ✨
+                  </p>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
 
-        {/* Swipe instruction hint for mobile users */}
-        <div className="text-center mt-6 md:hidden">
+        {/* Swipe instruction hint */}
+        <div className="text-center mt-6">
           <span className="font-cinzel text-[10px] tracking-widest text-gray-500 uppercase">
-            ← Swipe horizontally to explore photos →
+            ← Swipe horizontally or let it auto-play →
           </span>
         </div>
       </div>

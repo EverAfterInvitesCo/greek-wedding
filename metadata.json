@@ -1,0 +1,6 @@
+{
+  "name": "Farah & Seif — Greek Destination Wedding",
+  "description": "Luxury digital wedding invitation for Farah & Seif in Greece with live RSVP, guest photo gallery, schedule, and organizer portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

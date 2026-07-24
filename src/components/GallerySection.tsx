@@ -92,7 +92,7 @@ export const GallerySection: React.FC = () => {
         const publicUrl = publicURLData.publicUrl;
         
         // 3. Generate a unique ID string since the column is text-based and non-nullable
-        const uniqueId = 'photo_' + Math.random().toString(36.substring(2, 15)) + Date.now().toString(36);
+        const uniqueId = 'photo_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 
         const newPhotoPayload = {
           id: uniqueId,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Volume2, VolumeX, Menu, X, Shield, Heart } from 'lucide-react';
+import { Menu, X, Shield } from 'lucide-react';
 
 interface NavigationProps {
   onOpenOrganizer: () => void;
@@ -9,8 +9,6 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ onOpenOrganizer }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,62 +21,6 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenOrganizer }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Web Audio Synth Mediterranean Greek Bouzouki / Harp Ambient Loop Generator
-  const toggleAmbientAudio = () => {
-    if (isPlayingAudio && audioCtx) {
-      audioCtx.suspend();
-      setIsPlayingAudio(false);
-      return;
-    }
-
-    try {
-      const ctx = audioCtx || new (window.AudioContext || (window as any).webkitAudioContext)();
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-      setAudioCtx(ctx);
-      setIsPlayingAudio(true);
-
-      // Play soft Greek Aegean pentatonic scale notes (D, E, F#, A, B, D)
-      const scale = [293.66, 329.63, 369.99, 440.0, 493.88, 587.33];
-      let step = 0;
-
-      const playNextNote = () => {
-        if (ctx.state !== 'running') return;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        // Warm sine-triangle mix for lute/harp feel
-        osc.type = step % 3 === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(scale[step % scale.length], ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.8);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start();
-        osc.stop(ctx.currentTime + 1.9);
-
-        step++;
-      };
-
-      // Play note every 800ms
-      const interval = setInterval(() => {
-        if (ctx.state === 'running') {
-          playNextNote();
-        } else {
-          clearInterval(interval);
-        }
-      }, 750);
-    } catch (e) {
-      console.warn('Web Audio initialized:', e);
-    }
-  };
 
   const navLinks = [
     { name: 'Our Story', href: '#story' },
@@ -121,17 +63,8 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenOrganizer }) => {
             ))}
           </div>
 
-          {/* Actions: Audio Toggle & Organizer Lock */}
+          {/* Actions: Organizer Lock & Mobile Menu */}
           <div className="flex items-center gap-3">
-            {/* Audio Toggle */}
-            <button
-              onClick={toggleAmbientAudio}
-              title={isPlayingAudio ? 'Mute Greek Ambient Music' : 'Play Greek Ambient Music'}
-              className="p-2.5 rounded-full bg-[#0B152C]/80 border border-[#D4AF37]/30 text-[#E5C158] hover:bg-[#D4AF37] hover:text-[#050B18] transition-all cursor-pointer shadow-md"
-            >
-              {isPlayingAudio ? <Volume2 className="w-4 h-4 animate-pulse" /> : <VolumeX className="w-4 h-4" />}
-            </button>
-
             {/* Organizer Hidden Login */}
             <button
               onClick={onOpenOrganizer}

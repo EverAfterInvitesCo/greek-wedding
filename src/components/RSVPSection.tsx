@@ -77,7 +77,7 @@ export const RSVPSection: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0B152C] border border-[#D4AF37]/30 text-[#E5C158] text-xs font-cinzel tracking-[0.25em] uppercase mb-4">
             <Send className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Kindly Respond By June 1, 2027</span>
+            <span>Kindly Respond By November 1, 2026</span>
           </div>
           <h2 className="font-cormorant text-4xl sm:text-6xl text-white font-light">
             RSVP <span className="font-cinzel text-[#D4AF37] italic">Invitation</span>

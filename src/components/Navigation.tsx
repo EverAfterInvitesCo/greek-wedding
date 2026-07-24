@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Shield } from 'lucide-react';
+import { Volume2, VolumeX, Menu, X, Shield } from 'lucide-react';
 
 interface NavigationProps {
   onOpenOrganizer: () => void;
+  isPlaying: boolean;
+  onTogglePlay: () => void;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ onOpenOrganizer }) => {
+export const Navigation: React.FC<NavigationProps> = ({ onOpenOrganizer, isPlaying, onTogglePlay }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,8 +65,17 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenOrganizer }) => {
             ))}
           </div>
 
-          {/* Actions: Organizer Lock & Mobile Menu */}
+          {/* Actions: Audio Toggle, Organizer Lock & Mobile Menu */}
           <div className="flex items-center gap-3">
+            {/* Global Audio Toggle Button */}
+            <button
+              onClick={onTogglePlay}
+              title={isPlaying ? 'Mute Background Music' : 'Play Background Music'}
+              className="p-2.5 rounded-full bg-[#0B152C]/80 border border-[#D4AF37]/30 text-[#E5C158] hover:bg-[#D4AF37] hover:text-[#050B18] transition-all cursor-pointer shadow-md"
+            >
+              {isPlaying ? <Volume2 className="w-4 h-4 animate-pulse" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+
             {/* Organizer Hidden Login */}
             <button
               onClick={onOpenOrganizer}
